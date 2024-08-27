@@ -1,0 +1,73 @@
+import pytest
+from httpx import ASGITransport, AsyncClient
+import pytest_asyncio
+from app.main import app
+from app.database import engine, Base
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import sessionmaker
+
+TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
+
+@pytest_asyncio.fixture(scope="function")
+async def test_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    db_session = TestSessionLocal()
+    try:
+        yield db_session
+    finally:
+        await db_session.close()
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.drop_all)
+
+@pytest_asyncio.fixture(scope="function")
+async def client():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        yield ac
+
+# Вспомогательная функция для регистрации пользователя
+async def register_user(client, username="testuser", password="testpassword"):
+    return await client.post("/register", json={"username": username, "password": password})
+
+# Вспомогательная функция для получения токена
+async def get_auth_token(client, username="testuser", password="testpassword"):
+    response = await client.post("/token", data={"username": username, "password": password})
+    assert response.status_code == 200
+    token = response.json().get("access_token")
+    assert token is not None
+    return token
+
+# Вспомогательная функция для создания заметки
+async def create_note(client, token, title="Test Note", content="This is a test note"):
+    response = await client.post("/notes/", json={"title": title, "content": content}, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    return response.json()
+
+@pytest.mark.asyncio
+async def test_create_note_and_verify(client):
+    await register_user(client)
+    token = await get_auth_token(client)
+    note = await create_note(client, token)
+    assert note["title"] == "Test Note"
+    assert note["content"] == "This is a test note"
+
+@pytest.mark.asyncio
+async def test_read_notes(client):
+    await register_user(client)
+    token = await get_auth_token(client)
+    
+    # Создание нескольких заметок
+    await create_note(client, token, title="Note 1", content="Content 1")
+    await create_note(client, token, title="Note 2", content="Content 2")
+    await create_note(client, token, title="Note 3", content="Content 3")
+
+    # Чтение всех заметок
+    response = await client.get("/notes/", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    notes = response.json()
+    
+    assert len(notes) == 3
+    assert notes[0]["title"] == "Note 1"
+    assert notes[1]["title"] == "Note 2"
+    assert notes[2]["title"] == "Note 3"

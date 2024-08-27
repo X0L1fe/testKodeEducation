@@ -12,6 +12,7 @@
   - [Второй пример создания заметки](#второй-пример-создания-заметки)
 - [Использование Postman](#использование-postman)
 - [Установка и запуск проекта](#установка-и-запуск-проекта)
+  - [Настройка готовой БД PostrgeSQL](#установка-базы-данных-PostrgeSQL)
   - [Установка зависимостей](#установка-зависимостей)
   - [Запуск приложения](#запуск-приложения)
   - [Запуск с использованием Docker](#запуск-с-использованием-docker)
@@ -31,38 +32,45 @@ testKodeEducation/
 │   ├── main.py
 │   ├── routes/
 │   │   ├── auth.py
-│   │   ├── notes.py
+│   │   ├── misc.py
+│   │   └── notes.py
 │   ├── models.py
 │   ├── schemas.py
 │   ├── crud.py
 │   ├── utils.py
-│   ├── config.py
+│   ├── spellcheck.py
 ├── tests/
 │   ├── __init__.py
 │   ├── test_auth.py
-│   ├── test_notes.py
+│   └─ test_notes.txt
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
-└── README.md
+├── README.md
+└──wait-db.sh
 ```
 
 ## Основные компоненты
 
 - **app/** - Основная директория приложения.
   - **routes/** - Маршруты для авторизации и работы с заметками.
+  - **auth.py** - Логика аунтефикации.
+  - **crud.py** - Функции для взаимодействия с базой данных.
+  - **database.py** - Инициализация базы данных.
+  - **main.py** - Основной файл приложения для его запуска.
   - **models.py** - Описание моделей данных.
   - **schemas.py** - Схемы данных для валидации.
-  - **crud.py** - Функции для взаимодействия с базой данных.
+  - **spellcheck.py** - Интеграция с [ЯндексСпеллер](https://yandex.ru/dev/speller/).
   - **utils.py** - Вспомогательные утилиты.
-  - **config.py** - Конфигурация приложения.
 - **tests/** - Тесты для приложения.
-  - **test_auth.py** - Тесты для регистрации и авторизации (переименуйте `.txt` в `.py`).
-  - **test_notes.py** - Тесты для работы с заметками.
-- **Dockerfile** - Dockerfile для сборки образа приложения.
+  - **test_auth.py** - Тесты для регистрации и авторизации.
+  - **test_notes.txt** - Тесты для работы с заметками(переименуйте `.txt` в `.py`).
 - **docker-compose.yml** - Конфигурация для Docker Compose.
-- **requirements.txt** - Зависимости проекта.
+- **Dockerfile** - Dockerfile для сборки образа приложения.
+- **pytest.ini** - Конфигрурация для PyTest.
 - **README.md** - Текущий файл с описанием проекта.
+- **requirements.txt** - Зависимости проекта.
+- **wait-db.sh** - Цикличное подключение к базе данных в случае проблем.
 
 ## Авторизация
 
@@ -101,7 +109,7 @@ curl -X 'POST'   'http://localhost:8000/notes/'   -H 'accept: application/json' 
 
 ```json
 {
-  "title": "Моя третья заметка",
+  "title": "Моя заметка",
   "content": "Ошибка на ошибке",
   "id": 3,
   "owner_id": 1
@@ -190,6 +198,18 @@ curl -X 'POST'   'http://localhost:8000/notes/'   -H 'accept: application/json' 
 
 ## Установка и запуск проекта
 
+### Настройка готовой БД PostrgeSQL 
+
+Параметры сервера: 
+- **host:** `127.0.0.1`
+- **port:** `5432`
+- **DB name:** `KodeEducation`
+
+Инициализация БД:
+1. После создания нажать ``ПКМ`` по `KodeEducation`
+2. `Restore` и выбрать это [backup](https://github.com/X0L1fe/testKodeEducation/raw/main/KodeEducation_DB.sql)
+3. Поздравляю! Теперь у вас есть мой backup базы данных
+
 ### Установка зависимостей
 
 ```bash
@@ -213,7 +233,7 @@ docker-compose up --build
 Для запуска тестов выполните:
 
 ```bash
-pytest tests/
+pytest
 ```
 
 ## Контакты

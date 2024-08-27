@@ -1,17 +1,9 @@
 version: '3.7'
 
 services:
-  db:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: notes
-    ports:
-      - "5432:5432"
-
   web:
     build: .
+    container_name: kodeeducation_app
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     volumes:
       - .:/app
@@ -19,3 +11,20 @@ services:
       - "8000:8000"
     depends_on:
       - db
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/KodeEducation
+
+  db:
+    image: postgres:15
+    container_name: kodeeducation_db
+    environment:
+      POSTGRES_DB: KodeEducation
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
