@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 # Schemas NOTE
 class NoteBase(BaseModel):
@@ -13,6 +14,10 @@ class NoteSchema(NoteBase):
     owner_id: int
     class Config:
         from_attributes = True
+
+class NoteUpdate(BaseModel):
+    title: Optional[str]
+    content: Optional[str]
 
 # Schemas USER
 class UserBase(BaseModel):

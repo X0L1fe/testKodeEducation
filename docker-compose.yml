@@ -12,7 +12,8 @@ services:
     depends_on:
       - db
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/KodeEducation
+      - ENVIRONMENT=docker
+      - DATABASE_URL="postgresql+asyncpg://postgres:password@db:5432/KodeEducation"
 
   db:
     image: postgres:15

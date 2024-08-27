@@ -2,8 +2,15 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import text
 from app.models import Base
+import os
+from config import *
 
-DATABASE_URL = "postgresql+asyncpg://postgres:password@db:5432/KodeEducation"
+environment = os.getenv("ENVIRONMENT", "local")
+
+if environment == "docker":
+    DATABASE_URL = DATABASE_URL_DOCKER
+else:
+    DATABASE_URL = DATABASE_URL_LOCAL
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 AsyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)

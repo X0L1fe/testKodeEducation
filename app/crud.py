@@ -34,6 +34,36 @@ async def get_notes(db: AsyncSession, user_id: int):
     result = await db.execute(query)
     return result.unique().scalars().all()
 
+async def delete_user_note(db: AsyncSession, note_id: int, user_id: int) -> bool:
+    query = select(Note).where(Note.id == note_id, Note.owner_id == user_id)
+    result = await db.execute(query)
+    note = result.scalars().first()
+    if note:
+        await db.delete(note)
+        await db.commit()
+        return True
+    return False
+
+async def update_user_note(
+    db: AsyncSession, note_id: int, user_id: int, title: str = None, content: str = None
+) -> Note:
+    query = select(Note).where(Note.id == note_id, Note.owner_id == user_id)
+    result = await db.execute(query)
+    note = result.scalars().first()
+    if not note:
+        return None
+    
+    if title:
+        note.title = title
+    if content:
+        corrected_content = await correct_spelling(content)
+        note.content = corrected_content
+
+    db.add(note)
+    await db.commit()
+    await db.refresh(note)
+    return note
+
 async def authenticate_user(db: AsyncSession, username: str, password: str):
     user = await get_user_by_username(db, username)
     if not user or not verify_password(password, user.hashed_password):

@@ -43,6 +43,7 @@ testKodeEducation/
 │   ├── __init__.py
 │   ├── test_auth.py
 │   └─ test_notes.txt
+├── config.py
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
@@ -65,6 +66,7 @@ testKodeEducation/
 - **tests/** - Тесты для приложения.
   - **test_auth.py** - Тесты для регистрации и авторизации.
   - **test_notes.txt** - Тесты для работы с заметками(переименуйте `.txt` в `.py`).
+- **config.py** - Файл с константами базы данных для работы с Docker и локально.
 - **docker-compose.yml** - Конфигурация для Docker Compose.
 - **Dockerfile** - Dockerfile для сборки образа приложения.
 - **pytest.ini** - Конфигрурация для PyTest.
